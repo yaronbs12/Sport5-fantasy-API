@@ -360,3 +360,56 @@ def test_fixtures_match_is_finished_field(client: TestClient) -> None:
     assert resp.status_code == 200
     data = resp.json()
     assert data["games"][0]["is_finished"] is True
+
+
+def test_players_search_filter(client: TestClient) -> None:
+    """Search query parameter filters players by name substring."""
+    p1 = Player.model_validate({
+        "playerId": 1, "playerName": "Eran Zahavi", "teamId": 1, "teamName": "Maccabi",
+        "positionId": 4, "price": 10.0, "totalPoints": 50, "isActive": True,
+    })
+    p2 = Player.model_validate({
+        "playerId": 2, "playerName": "Dia Saba", "teamId": 2, "teamName": "Maccabi Haifa",
+        "positionId": 3, "price": 8.5, "totalPoints": 40, "isActive": True,
+    })
+    with patch(
+        "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_all_players",
+        new=AsyncMock(return_value=[p1, p2]),
+    ):
+        resp = client.get("/api/v1/israel/players?search=zahavi")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 1
+        assert data[0]["name"] == "Eran Zahavi"
+
+
+def test_players_sorting_and_pagination(client: TestClient) -> None:
+    """Players can be sorted by price / points and paginated with limit / offset."""
+    players = [
+        Player.model_validate({
+            "playerId": i, "playerName": f"Player {i}", "teamId": 1, "teamName": "Team",
+            "positionId": 3, "price": float(i), "totalPoints": i * 10, "isActive": True,
+        })
+        for i in range(1, 6)
+    ]
+    with patch(
+        "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_all_players",
+        new=AsyncMock(return_value=players),
+    ):
+        # Sort by price desc, limit 2
+        resp = client.get("/api/v1/israel/players?sort_by=price&order=desc&limit=2")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 2
+        assert data[0]["id"] == 5
+        assert data[1]["id"] == 4
+
+        # Offset 2, limit 2
+        resp_offset = client.get(
+            "/api/v1/israel/players?sort_by=price&order=desc&offset=2&limit=2"
+        )
+        assert resp_offset.status_code == 200
+        data_offset = resp_offset.json()
+        assert len(data_offset) == 2
+        assert data_offset[0]["id"] == 3
+        assert data_offset[1]["id"] == 2

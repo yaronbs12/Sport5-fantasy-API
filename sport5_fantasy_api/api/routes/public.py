@@ -144,7 +144,10 @@ async def list_players(
     position: Annotated[
         Position | None,
         Query(
-            description="Filter by player position (GK, DEF, MID, FWD).",
+            description=(
+                "Filter by player position. Football: GK, DEF, MID, FWD. "
+                "Basketball (Euroleague): G, F, C."
+            ),
             examples=["MID"],
         ),
     ] = None,
@@ -172,6 +175,13 @@ async def list_players(
             examples=[1],
         ),
     ] = None,
+    search: Annotated[
+        str | None,
+        Query(
+            description="Case-insensitive substring search by player name.",
+            examples=["Zahavi"],
+        ),
+    ] = None,
     include_inactive: Annotated[
         bool,
         Query(
@@ -181,8 +191,39 @@ async def list_players(
             ),
         ),
     ] = False,
+    sort_by: Annotated[
+        str | None,
+        Query(
+            description="Field to sort by: 'price', 'total_points', or 'name'.",
+            examples=["price"],
+        ),
+    ] = None,
+    order: Annotated[
+        str,
+        Query(
+            description="Sort direction: 'asc' or 'desc' (default: 'desc').",
+            examples=["desc"],
+        ),
+    ] = "desc",
+    limit: Annotated[
+        int | None,
+        Query(
+            ge=1,
+            le=500,
+            description="Maximum number of player records to return.",
+            examples=[50],
+        ),
+    ] = None,
+    offset: Annotated[
+        int,
+        Query(
+            ge=0,
+            description="Zero-based index offset for pagination (default: 0).",
+            examples=[0],
+        ),
+    ] = 0,
 ) -> list[Player]:
-    """Return all players, applying optional filters."""
+    """Return all players, applying optional filters, search, sorting, and pagination."""
     players = await connector.get_all_players()
 
     if not include_inactive:
@@ -195,17 +236,37 @@ async def list_players(
         players = [p for p in players if p.price <= max_price]
     if team_id is not None:
         players = [p for p in players if p.team_id == team_id]
+    if search is not None and search.strip():
+        q = search.strip().lower()
+        players = [p for p in players if q in p.name.lower()]
+
+    # Sorting
+    if sort_by is not None:
+        reverse = order.lower() != "asc"
+        if sort_by == "price":
+            players.sort(key=lambda p: p.price, reverse=reverse)
+        elif sort_by == "total_points":
+            players.sort(key=lambda p: p.total_points, reverse=reverse)
+        elif sort_by == "name":
+            players.sort(key=lambda p: p.name.lower(), reverse=reverse)
+
+    # Pagination
+    if offset > 0:
+        players = players[offset:]
+    if limit is not None:
+        players = players[:limit]
 
     logger.debug(
         "[%s] /players returned %d results "
-        "(position=%s, min=%s, max=%s, team_id=%s, include_inactive=%s)",
+        "(position=%s, min=%s, max=%s, team_id=%s, search=%s, sort_by=%s)",
         connector.tournament_type,
         len(players),
         position,
         min_price,
         max_price,
         team_id,
-        include_inactive,
+        search,
+        sort_by,
     )
     return players
 

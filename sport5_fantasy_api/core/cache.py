@@ -42,8 +42,22 @@ class TTLCache:
 
     def __init__(self, max_size: int = 1000) -> None:
         self._store: dict[str, tuple[Any, float]] = {}
-        self._lock: asyncio.Lock = asyncio.Lock()
         self._max_size: int = max_size
+        self._lock: asyncio.Lock | None = None
+        self._loop: asyncio.AbstractEventLoop | None = None
+
+    @property
+    def lock(self) -> asyncio.Lock:
+        """Return an asyncio.Lock tied to the current running event loop."""
+        try:
+            current_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            current_loop = None
+
+        if self._lock is None or (current_loop is not None and self._loop != current_loop):
+            self._lock = asyncio.Lock()
+            self._loop = current_loop
+        return self._lock
 
     # ------------------------------------------------------------------
     # Public API
@@ -65,7 +79,7 @@ class TTLCache:
         Any | None
             The stored value, or ``None`` when the key is missing or stale.
         """
-        async with self._lock:
+        async with self.lock:
             entry = self._store.get(key)
             if entry is None:
                 return None
@@ -90,7 +104,7 @@ class TTLCache:
         """
         now = time.monotonic()
         expiry = now + ttl_seconds
-        async with self._lock:
+        async with self.lock:
             # If inserting a new key at capacity, prune expired keys first
             if key not in self._store and len(self._store) >= self._max_size:
                 expired = [k for k, (_, exp) in self._store.items() if now >= exp]
@@ -113,12 +127,12 @@ class TTLCache:
         key:
             Cache key to delete.
         """
-        async with self._lock:
+        async with self.lock:
             self._store.pop(key, None)
 
     async def clear(self) -> None:
         """Remove **all** entries from the cache."""
-        async with self._lock:
+        async with self.lock:
             self._store.clear()
 
     # ------------------------------------------------------------------
@@ -133,7 +147,7 @@ class TTLCache:
         Use only for diagnostics / health-check endpoints.
         """
         now = time.monotonic()
-        async with self._lock:
+        async with self.lock:
             return sum(
                 1
                 for _, expiry in self._store.values()

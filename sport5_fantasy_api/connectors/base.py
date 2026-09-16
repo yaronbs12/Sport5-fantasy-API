@@ -52,7 +52,11 @@ from sport5_fantasy_api.models.fixture import (
     Team,
     _parse_sport5_datetime,
 )
-from sport5_fantasy_api.models.league import LeagueSummary
+from sport5_fantasy_api.models.league import (
+    LeagueLeaderboard,
+    LeagueMember,
+    LeagueSummary,
+)
 from sport5_fantasy_api.models.player import Player
 from sport5_fantasy_api.models.user import RosterPlayer, UserTeamResponse
 
@@ -958,19 +962,67 @@ class BaseSport5Connector(ABC):
             "adminKey": None,
         }
 
-        try:
-            response = await client.post(
-                "/api/Account/Login",
-                json=payload,
-            )
-        except httpx.TimeoutException as exc:
-            raise Sport5UpstreamError(
-                f"Login request timed out after {settings.http_timeout_seconds}s."
-            ) from exc
-        except httpx.RequestError as exc:
-            raise Sport5UpstreamError(
-                f"Network error reaching Sport5 upstream during login: {exc}"
-            ) from exc
+        response: httpx.Response | None = None
+        for attempt in range(_RETRY_MAX_ATTEMPTS + 1):
+            try:
+                response = await client.post(
+                    "/api/Account/Login",
+                    json=payload,
+                )
+            except (httpx.TimeoutException, httpx.NetworkError) as exc:
+                if attempt < _RETRY_MAX_ATTEMPTS:
+                    delay = _calculate_backoff_delay(
+                        attempt, _RETRY_BASE_DELAY, _RETRY_BACKOFF_FACTOR, _RETRY_MAX_DELAY
+                    )
+                    logger.warning(
+                        "[%s] Transient network error during login (%s). "
+                        "Retrying in %.2fs (attempt %d/%d)...",
+                        self.tournament_type,
+                        exc.__class__.__name__,
+                        delay,
+                        attempt + 1,
+                        _RETRY_MAX_ATTEMPTS,
+                    )
+                    await asyncio.sleep(delay)
+                    continue
+
+                if isinstance(exc, httpx.TimeoutException):
+                    raise Sport5UpstreamError(
+                        f"Login request timed out after {settings.http_timeout_seconds}s."
+                    ) from exc
+                raise Sport5UpstreamError(
+                    f"Network error reaching Sport5 upstream during login: {exc}"
+                ) from exc
+            except httpx.RequestError as exc:
+                raise Sport5UpstreamError(
+                    f"Network error reaching Sport5 upstream during login: {exc}"
+                ) from exc
+
+            if response.status_code in _RETRY_STATUS_CODES:
+                if attempt < _RETRY_MAX_ATTEMPTS:
+                    delay = _calculate_backoff_delay(
+                        attempt, _RETRY_BASE_DELAY, _RETRY_BACKOFF_FACTOR, _RETRY_MAX_DELAY
+                    )
+                    logger.warning(
+                        "[%s] Upstream returned transient HTTP %d during login. "
+                        "Retrying in %.2fs (attempt %d/%d)...",
+                        self.tournament_type,
+                        response.status_code,
+                        delay,
+                        attempt + 1,
+                        _RETRY_MAX_ATTEMPTS,
+                    )
+                    await asyncio.sleep(delay)
+                    continue
+                raise Sport5UpstreamError(
+                    f"Unexpected HTTP {response.status_code} from Sport5 upstream during login.",
+                    status_code=response.status_code,
+                )
+
+            break
+
+        if response is None:
+            raise Sport5UpstreamError("Login request failed to produce a response.")
 
         # Check response status
         if response.status_code != 200:
@@ -1185,3 +1237,77 @@ class BaseSport5Connector(ABC):
                 )
 
         return summaries
+
+    async def get_league_leaderboard(
+        self,
+        auth_cookie: str,
+        league_id: int,
+        page_index: int = 0,
+    ) -> LeagueLeaderboard:
+        """
+        Fetch paginated standings and leaderboard rankings for a custom league.
+
+        Parameters
+        ----------
+        auth_cookie:
+            The raw ``.AspNetCore.Cookies`` session token value.
+        league_id:
+            Unique Sport5 league identifier.
+        page_index:
+            0-based page index for pagination (default 0).
+
+        Returns
+        -------
+        LeagueLeaderboard
+            Paginated league standings with member rankings.
+
+        Raises
+        ------
+        Sport5AuthError
+            If the session cookie is invalid or expired.
+        """
+        season_id = await self.discover_season_id()
+        data = await self._safe_get(
+            "/api/CustomLeagues/GetLeagueData",
+            auth_cookie=auth_cookie,
+            params={
+                "leagueId": league_id,
+                "seasonId": season_id,
+                "pageIndex": page_index,
+            },
+        )
+
+        raw_data: Any = data.get("data", {}) if isinstance(data, dict) else data
+        if not isinstance(raw_data, dict):
+            raw_data = {}
+
+        members_raw = raw_data.get("members") or raw_data.get("userLeagues") or []
+        if not isinstance(members_raw, list):
+            members_raw = []
+
+        members: list[LeagueMember] = []
+        for raw in members_raw:
+            try:
+                members.append(LeagueMember.model_validate(raw))
+            except Exception as exc:
+                logger.warning(
+                    "[%s] Skipping malformed league member record: %s",
+                    self.tournament_type,
+                    exc,
+                )
+
+        return LeagueLeaderboard(
+            league_id=int(raw_data.get("leagueId") or league_id),
+            league_name=str(
+                raw_data.get("leagueName")
+                or raw_data.get("name")
+                or f"League {league_id}"
+            ),
+            total_members=int(
+                raw_data.get("totalMembers")
+                or raw_data.get("membersCount")
+                or len(members)
+            ),
+            page_index=int(raw_data.get("pageIndex", page_index)),
+            members=members,
+        )

@@ -219,16 +219,27 @@ class Match(BaseModel):
     @classmethod
     def _derive_is_finished(cls, data: object) -> object:
         """
-        Derive ``is_finished`` from ``gameStatus``.
+        Derive ``is_finished`` from ``gameStatus`` and ``resultData``.
 
         A status of 6 (full time) marks the match as finished.
-        Also considers a non-null ``resultData`` as a secondary indicator.
+        Also considers populated ``resultData`` when game is not live/in-progress.
         """
         if not isinstance(data, dict):
             return data
         status: int = int(data.get("gameStatus", 0))
         result_raw: Any = data.get("resultData")
-        data["is_finished"] = status == _GAME_STATUS_FINISHED or bool(result_raw)
+        has_result = False
+        if isinstance(result_raw, dict):
+            has_result = bool(result_raw)
+        elif isinstance(result_raw, str):
+            cleaned = result_raw.strip()
+            has_result = bool(cleaned and cleaned not in ("null", "{}", "[]"))
+
+        # Live in-progress statuses (e.g. 2=1st half, 3=HT, 4=2nd half) or postponed (9)
+        # are not finished even if live resultData is attached.
+        data["is_finished"] = (status == _GAME_STATUS_FINISHED) or (
+            status not in (1, 2, 3, 4, 9) and has_result
+        )
         return data
 
     @field_validator("result_data", mode="before")

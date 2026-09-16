@@ -18,6 +18,7 @@ from fastapi.testclient import TestClient
 from sport5_fantasy_api.api.main import create_app
 from sport5_fantasy_api.core.exceptions import Sport5AuthError, Sport5UpstreamError
 from sport5_fantasy_api.models.enums import PlayerRole
+from sport5_fantasy_api.models.league import LeagueLeaderboard, LeagueMember
 from sport5_fantasy_api.models.user import RosterPlayer, UserTeamResponse
 
 _LOGIN_URL = "https://dreamteam.sport5.co.il/api/Account/Login"
@@ -267,3 +268,65 @@ def test_me_leagues_missing_auth_returns_401(client: TestClient) -> None:
     """GET /me/leagues without auth must return 401."""
     resp = client.get("/api/v1/israel/me/leagues")
     assert resp.status_code == 401
+
+
+def test_me_team_with_user_id_query_param(client: TestClient) -> None:
+    """GET /me/team passes user_id query parameter to connector."""
+    captured_kwargs: dict[str, object] = {}
+
+    async def fake_get_user_team(
+        self: object,
+        auth_cookie: str,
+        user_id: str | None = None,
+    ) -> UserTeamResponse:
+        captured_kwargs["auth_cookie"] = auth_cookie
+        captured_kwargs["user_id"] = user_id
+        return _make_full_squad()
+
+    with patch(
+        "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_user_team",
+        new=fake_get_user_team,
+    ):
+        resp = client.get(
+            "/api/v1/israel/me/team?user_id=friend_999",
+            headers={"Authorization": "Bearer sample_token"},
+        )
+        assert resp.status_code == 200
+        assert captured_kwargs["auth_cookie"] == "sample_token"
+        assert captured_kwargs["user_id"] == "friend_999"
+
+
+def test_me_league_leaderboard_endpoint(client: TestClient) -> None:
+    """GET /me/leagues/{league_id} returns LeagueLeaderboard with members."""
+    fake_leaderboard = LeagueLeaderboard(
+        leagueId=505,
+        leagueName="Premier Friends",
+        totalMembers=2,
+        pageIndex=0,
+        members=[
+            LeagueMember.model_validate({
+                "userId": "10", "userName": "Alice", "teamName": "Team Alice",
+                "totalPoints": 120, "rank": 1,
+            }),
+            LeagueMember.model_validate({
+                "userId": "20", "userName": "Bob", "teamName": "Team Bob",
+                "totalPoints": 110, "rank": 2,
+            }),
+        ],
+    )
+
+    with patch(
+        "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_league_leaderboard",
+        new=AsyncMock(return_value=fake_leaderboard),
+    ):
+        resp = client.get(
+            "/api/v1/israel/me/leagues/505?page=0",
+            headers={"Authorization": "Bearer sample_token"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["leagueId"] == 505
+        assert data["leagueName"] == "Premier Friends"
+        assert len(data["members"]) == 2
+        assert data["members"][0]["userName"] == "Alice"
+        assert data["members"][0]["rank"] == 1
