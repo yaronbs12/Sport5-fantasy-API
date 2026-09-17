@@ -236,7 +236,14 @@ def create_app() -> FastAPI:
     )
 
     # --- CORS middleware ---
-    cors_allow_credentials = settings.cors_origins != ["*"]
+    is_wildcard = settings.cors_origins == ["*"]
+    if settings.environment == "production" and is_wildcard:
+        logger.warning(
+            "CORS is configured with wildcard '*' in production mode! "
+            "Set FANTASY_CORS_ORIGINS to specific trusted frontend domains."
+        )
+
+    cors_allow_credentials = not is_wildcard
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,

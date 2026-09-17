@@ -152,10 +152,7 @@ class ConnectorRegistry:
             await connector.aclose()
 
     def __repr__(self) -> str:  # pragma: no cover
-        return (
-            f"ConnectorRegistry("
-            f"registered={list(self._instances.keys())!r})"
-        )
+        return f"ConnectorRegistry(registered={list(self._instances.keys())!r})"
 
 
 # ---------------------------------------------------------------------------

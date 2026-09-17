@@ -59,8 +59,7 @@ class Sport5WAFBlockError(Sport5FantasyAPIError):
     def __init__(
         self,
         message: str = (
-            "Sport5 WAF blocked the request. "
-            "The upstream returned HTML instead of JSON."
+            "Sport5 WAF blocked the request. The upstream returned HTML instead of JSON."
         ),
     ) -> None:
         super().__init__(message)
@@ -84,9 +83,7 @@ class Sport5UpstreamError(Sport5FantasyAPIError):
 
     def __repr__(self) -> str:  # pragma: no cover
         return (
-            f"{self.__class__.__name__}("
-            f"message={self.message!r}, "
-            f"status_code={self.status_code!r})"
+            f"{self.__class__.__name__}(message={self.message!r}, status_code={self.status_code!r})"
         )
 
 

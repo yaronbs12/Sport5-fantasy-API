@@ -187,9 +187,12 @@ def test_private_me_team_bypasses_cache() -> None:
         call_count += 1
         return mock_team
 
-    with TestClient(app) as client, patch(
-        "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_user_team",
-        new=fake_get_user_team,
+    with (
+        TestClient(app) as client,
+        patch(
+            "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_user_team",
+            new=fake_get_user_team,
+        ),
     ):
         # Call twice -- both must hit connector (no cache)
         r1 = client.get(
@@ -218,9 +221,12 @@ def test_private_me_leagues_bypasses_cache() -> None:
         call_count += 1
         return []
 
-    with TestClient(app) as client, patch(
-        "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_user_leagues",
-        new=fake_get_user_leagues,
+    with (
+        TestClient(app) as client,
+        patch(
+            "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_user_leagues",
+            new=fake_get_user_leagues,
+        ),
     ):
         for _ in range(3):
             client.get(

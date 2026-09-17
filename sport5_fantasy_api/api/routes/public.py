@@ -48,6 +48,7 @@ router = APIRouter(tags=["Public"])
 # Tournament directory — no {tournament} path param
 # ---------------------------------------------------------------------------
 
+
 class TournamentInfo(BaseModel):
     """Metadata for a single supported tournament."""
 
@@ -307,9 +308,7 @@ async def get_player(
         "and shirt/kit URL when available. "
         "Results are cached for up to 1 hour."
     ),
-    response_description=(
-        "List of club teams with id, name, logo_url, and shirt_url fields."
-    ),
+    response_description=("List of club teams with id, name, logo_url, and shirt_url fields."),
 )
 async def list_teams(
     connector: Annotated[BaseSport5Connector, Depends(resolve_connector)],

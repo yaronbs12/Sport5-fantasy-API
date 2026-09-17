@@ -36,19 +36,21 @@ print("PASS _parse_sport5_datetime ISO offset passthrough")
 # Team model
 # ---------------------------------------------------------------------------
 
-t = Team.model_validate({
-    "id": 5,
-    "name": "מכבי תל אביב",
-    "teamLogoPath": "/images/logos/maccabi.png",
-    "teamShirtPath": "/images/shirts/maccabi.png",
-})
+t = Team.model_validate(
+    {
+        "id": 5,
+        "name": "מכבי תל אביב",
+        "teamLogoPath": "/images/logos/maccabi.png",
+        "teamShirtPath": "/images/shirts/maccabi.png",
+    }
+)
 assert t.id == 5
 assert t.name == "מכבי תל אביב"
 assert t.logo_url == "/images/logos/maccabi.png"
 assert t.shirt_url == "/images/shirts/maccabi.png"
 print(f"PASS Team: {t.name} logo={t.logo_url}")
 
-t_nologos = Team.model_validate({"id": 7, "name": "הפועל ת\"א"})
+t_nologos = Team.model_validate({"id": 7, "name": 'הפועל ת"א'})
 assert t_nologos.logo_url is None
 assert t_nologos.shirt_url is None
 print(f"PASS Team (no logos): {t_nologos.name}")
@@ -57,24 +59,28 @@ print(f"PASS Team (no logos): {t_nologos.name}")
 # RoundInfo model
 # ---------------------------------------------------------------------------
 
-r = RoundInfo.model_validate({
-    "id": 101,
-    "roundIndex": 5,
-    "startDate": "2024-11-15T18:00:00",
-    "endDate": "2024-11-18T22:00:00",
-})
+r = RoundInfo.model_validate(
+    {
+        "id": 101,
+        "roundIndex": 5,
+        "startDate": "2024-11-15T18:00:00",
+        "endDate": "2024-11-18T22:00:00",
+    }
+)
 assert r.id == 101
 assert r.round_index == 5
 assert isinstance(r.start_date, datetime)
 print(f"PASS RoundInfo: round={r.round_index} start={r.start_date.date()}")
 
 # Test epoch-ms date parsing
-r_epoch = RoundInfo.model_validate({
-    "id": 102,
-    "roundIndex": 6,
-    "startDate": 1700000000000,
-    "endDate": 1700100000000,
-})
+r_epoch = RoundInfo.model_validate(
+    {
+        "id": 102,
+        "roundIndex": 6,
+        "startDate": 1700000000000,
+        "endDate": 1700100000000,
+    }
+)
 assert isinstance(r_epoch.start_date, datetime)
 print(f"PASS RoundInfo epoch-ms dates: {r_epoch.start_date}")
 
@@ -82,19 +88,21 @@ print(f"PASS RoundInfo epoch-ms dates: {r_epoch.start_date}")
 # Match model — normal fixture
 # ---------------------------------------------------------------------------
 
-m = Match.model_validate({
-    "id": 999,
-    "roundId": 101,
-    "teamAId": 5,
-    "teamAName": "מכבי ת\"א",
-    "teamALogo": "/logos/maccabi.png",
-    "teamBId": 3,
-    "teamBName": "הפועל ב\"ש",
-    "teamBLogo": "/logos/hapoel.png",
-    "gameStart": "2024-11-16T19:00:00",
-    "gameStatus": 0,
-    "resultData": None,
-})
+m = Match.model_validate(
+    {
+        "id": 999,
+        "roundId": 101,
+        "teamAId": 5,
+        "teamAName": 'מכבי ת"א',
+        "teamALogo": "/logos/maccabi.png",
+        "teamBId": 3,
+        "teamBName": 'הפועל ב"ש',
+        "teamBLogo": "/logos/hapoel.png",
+        "gameStart": "2024-11-16T19:00:00",
+        "gameStatus": 0,
+        "resultData": None,
+    }
+)
 assert m.id == 999
 assert m.home_team_id == 5
 assert m.away_team_id == 3
@@ -103,37 +111,41 @@ assert m.result_data is None
 print(f"PASS Match (scheduled): {m.home_team_name} vs {m.away_team_name}")
 
 # Match that is finished via gameStatus=6
-m_done = Match.model_validate({
-    "id": 1000,
-    "roundId": 100,
-    "teamAId": 1,
-    "teamAName": "Team A",
-    "teamALogo": None,
-    "teamBId": 2,
-    "teamBName": "Team B",
-    "teamBLogo": None,
-    "gameStart": "2024-11-10T19:00:00",
-    "gameStatus": 6,
-    "resultData": None,
-})
+m_done = Match.model_validate(
+    {
+        "id": 1000,
+        "roundId": 100,
+        "teamAId": 1,
+        "teamAName": "Team A",
+        "teamALogo": None,
+        "teamBId": 2,
+        "teamBName": "Team B",
+        "teamBLogo": None,
+        "gameStart": "2024-11-10T19:00:00",
+        "gameStatus": 6,
+        "resultData": None,
+    }
+)
 assert m_done.is_finished, "gameStatus=6 should mark as finished"
 print("PASS Match (finished via gameStatus=6)")
 
 # Match finished via resultData (JSON string)
 result_payload = json.dumps({"homeScore": 2, "awayScore": 1, "events": []})
-m_result = Match.model_validate({
-    "id": 1001,
-    "roundId": 100,
-    "teamAId": 1,
-    "teamAName": "Team A",
-    "teamALogo": None,
-    "teamBId": 2,
-    "teamBName": "Team B",
-    "teamBLogo": None,
-    "gameStart": "2024-11-10T19:00:00",
-    "gameStatus": 0,  # status not updated yet
-    "resultData": result_payload,
-})
+m_result = Match.model_validate(
+    {
+        "id": 1001,
+        "roundId": 100,
+        "teamAId": 1,
+        "teamAName": "Team A",
+        "teamALogo": None,
+        "teamBId": 2,
+        "teamBName": "Team B",
+        "teamBLogo": None,
+        "gameStart": "2024-11-10T19:00:00",
+        "gameStatus": 0,  # status not updated yet
+        "resultData": result_payload,
+    }
+)
 assert m_result.is_finished, "Non-null resultData should mark as finished"
 assert isinstance(m_result.result_data, dict)
 assert m_result.result_data.get("homeScore") == 2

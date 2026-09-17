@@ -52,6 +52,25 @@ class Settings(BaseSettings):
         description="Enable FastAPI debug mode (never use True in production).",
     )
 
+    environment: str = Field(
+        default="development",
+        description="Deployment environment: 'development', 'staging', 'production', or 'test'.",
+    )
+    rate_limit_enabled: bool = Field(
+        default=True,
+        description="Enable sliding-window rate limiting on sensitive endpoints.",
+    )
+    rate_limit_login_requests: int = Field(
+        default=5,
+        ge=1,
+        description="Maximum login attempts allowed within the rate limit window.",
+    )
+    rate_limit_login_window_seconds: float = Field(
+        default=60.0,
+        ge=1.0,
+        description="Sliding window duration in seconds for login rate limiting.",
+    )
+
     # ------------------------------------------------------------------
     # CORS
     # ------------------------------------------------------------------
@@ -60,7 +79,7 @@ class Settings(BaseSettings):
         default=["*"],
         description=(
             "List of allowed CORS origins. Defaults to wildcard for local "
-            "bot/client development. Restrict in production."
+            "bot/client development. Restrict to specific domains in production."
         ),
     )
 

@@ -99,9 +99,7 @@ async def test_connector_get_all_players_flat_structure() -> None:
         assert players[1].id == 2
         assert players[1].position == Position.MID
 
-        mock_get.assert_called_once_with(
-            "/api/Players/GetTeamsAndPlayers", params={"seasonId": 10}
-        )
+        mock_get.assert_called_once_with("/api/Players/GetTeamsAndPlayers", params={"seasonId": 10})
 
         # Test cache hit
         cached_players = await connector.get_all_players()
@@ -211,14 +209,17 @@ def test_fastapi_players_endpoints() -> None:
 
     client = TestClient(app)
 
-    with patch(
-        "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_all_players",
-        new_callable=AsyncMock,
-        return_value=dummy_players,
-    ), patch(
-        "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_player_by_id",
-        new_callable=AsyncMock,
-        side_effect=lambda pid: next((p for p in dummy_players if p.id == pid), None),
+    with (
+        patch(
+            "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_all_players",
+            new_callable=AsyncMock,
+            return_value=dummy_players,
+        ),
+        patch(
+            "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_player_by_id",
+            new_callable=AsyncMock,
+            side_effect=lambda pid: next((p for p in dummy_players if p.id == pid), None),
+        ),
     ):
         # Test full list
         res = client.get("/api/v1/israel/players")
@@ -319,4 +320,3 @@ async def test_connector_get_all_players_active_status_resolution() -> None:
         assert by_id[2].is_active is False
         assert by_id[3].is_active is False
         assert by_id[4].is_active is False
-

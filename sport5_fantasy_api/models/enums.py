@@ -13,6 +13,7 @@ from enum import Enum
 if sys.version_info >= (3, 11):
     from enum import StrEnum
 else:
+
     class StrEnum(str, Enum):
         """Backport of StrEnum for Python 3.10."""
 
@@ -42,15 +43,15 @@ class Position(StrEnum):
     """Player positions across football and basketball competitions."""
 
     # Football positions
-    GK = "GK"    # Goalkeeper
+    GK = "GK"  # Goalkeeper
     DEF = "DEF"  # Defender
     MID = "MID"  # Midfielder
     FWD = "FWD"  # Forward
 
     # Basketball positions (Euroleague)
-    GUARD = "G"      # Guard
-    FORWARD = "F"    # Forward
-    CENTER = "C"     # Center
+    GUARD = "G"  # Guard
+    FORWARD = "F"  # Forward
+    CENTER = "C"  # Center
 
     # Fallback for unexpected upstream values
     UNKNOWN = "UNKNOWN"

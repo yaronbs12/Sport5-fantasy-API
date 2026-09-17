@@ -1,0 +1,20 @@
+﻿services:
+  - type: web
+    name: sport5-fantasy-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: frankfurt
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: FANTASY_ENVIRONMENT
+        value: production
+      - key: FANTASY_DEBUG
+        value: "false"
+      - key: FANTASY_CORS_ORIGINS
+        value: "*"
+      - key: FANTASY_HTTP_TIMEOUT_SECONDS
+        value: "15.0"
+      - key: FANTASY_RATE_LIMIT_ENABLED
+        value: "true"

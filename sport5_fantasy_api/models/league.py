@@ -65,9 +65,7 @@ class LeagueMember(BaseModel):
         alias="userId",
         description="Unique Sport5 user identifier (may be numeric string).",
     )
-    user_name: str = Field(
-        ..., alias="userName", description="Sport5 username / display name."
-    )
+    user_name: str = Field(..., alias="userName", description="Sport5 username / display name.")
     team_name: str = Field(
         ..., alias="teamName", description="The user's fantasy team display name."
     )

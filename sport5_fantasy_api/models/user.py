@@ -181,8 +181,5 @@ class UserTeamResponse(BaseModel):
     )
     sub_captain: RosterPlayer | None = Field(
         default=None,
-        description=(
-            "The designated vice-captain (earns double points if captain "
-            "does not play)."
-        ),
+        description=("The designated vice-captain (earns double points if captain does not play)."),
     )

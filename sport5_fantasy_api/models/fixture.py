@@ -289,9 +289,7 @@ class LeagueMetaResponse(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    season_id: int = Field(
-        ..., alias="seasonId", description="Sport5 numeric season identifier."
-    )
+    season_id: int = Field(..., alias="seasonId", description="Sport5 numeric season identifier.")
     season_name: str = Field(
         default="",
         alias="seasonName",

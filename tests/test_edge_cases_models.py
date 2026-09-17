@@ -256,24 +256,28 @@ def test_match_result_data_parsed_from_json_string() -> None:
 
 def test_round_info_accepts_epoch_ms_dates() -> None:
     """RoundInfo startDate / endDate fields accept epoch-ms integers."""
-    r = RoundInfo.model_validate({
-        "id": 1,
-        "roundIndex": 1,
-        "startDate": 1700000000000,
-        "endDate": 1700086400000,
-    })
+    r = RoundInfo.model_validate(
+        {
+            "id": 1,
+            "roundIndex": 1,
+            "startDate": 1700000000000,
+            "endDate": 1700086400000,
+        }
+    )
     assert isinstance(r.start_date, datetime)
     assert isinstance(r.end_date, datetime)
 
 
 def test_round_info_accepts_iso_dates() -> None:
     """RoundInfo startDate / endDate fields accept ISO strings."""
-    r = RoundInfo.model_validate({
-        "id": 2,
-        "roundIndex": 2,
-        "startDate": "2024-10-10T00:00:00",
-        "endDate": "2024-10-17T00:00:00",
-    })
+    r = RoundInfo.model_validate(
+        {
+            "id": 2,
+            "roundIndex": 2,
+            "startDate": "2024-10-10T00:00:00",
+            "endDate": "2024-10-17T00:00:00",
+        }
+    )
     assert isinstance(r.start_date, datetime)
 
 

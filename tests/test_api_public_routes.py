@@ -27,12 +27,12 @@ from sport5_fantasy_api.models.player import Player
 # Fixtures / helpers
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(scope="module")
 def client() -> Generator[TestClient, None, None]:
     app = create_app()
     with TestClient(app) as c:
         yield c
-
 
 
 def _make_player(
@@ -43,35 +43,52 @@ def _make_player(
     is_active: bool = True,
 ) -> Player:
     pos_map = {"GK": 1, "DEF": 2, "MID": 3, "FWD": 4}
-    return Player.model_validate({
-        "playerId": pid,
-        "playerName": f"Player {pid}",
-        "teamId": team_id,
-        "teamName": "Team A",
-        "positionId": pos_map[position],
-        "price": price,
-        "isActive": is_active,
-    })
+    return Player.model_validate(
+        {
+            "playerId": pid,
+            "playerName": f"Player {pid}",
+            "teamId": team_id,
+            "teamName": "Team A",
+            "positionId": pos_map[position],
+            "price": price,
+            "isActive": is_active,
+        }
+    )
 
 
 def _make_fixture_meta() -> LeagueMetaResponse:
     # Rounds deliberately created out-of-order to verify sorting (3, 1, 2)
     # The connector sorts them; our mock bypasses the connector, so we sort here
     # to test that the response reflects the correct sorted state.
-    rounds = sorted([
-        RoundInfo.model_validate({"id": r, "roundIndex": r,
-                                  "startDate": f"2024-10-0{r}T00:00:00",
-                                  "endDate": f"2024-10-0{r}T23:59:59"})
-        for r in [3, 1, 2]
-    ], key=lambda x: x.round_index)
+    rounds = sorted(
+        [
+            RoundInfo.model_validate(
+                {
+                    "id": r,
+                    "roundIndex": r,
+                    "startDate": f"2024-10-0{r}T00:00:00",
+                    "endDate": f"2024-10-0{r}T23:59:59",
+                }
+            )
+            for r in [3, 1, 2]
+        ],
+        key=lambda x: x.round_index,
+    )
     games = [
-        Match.model_validate({
-            "id": 1, "roundId": 1,
-            "teamAId": 1, "teamAName": "Home", "teamALogo": None,
-            "teamBId": 2, "teamBName": "Away", "teamBLogo": None,
-            "gameStart": "2024-10-01T19:00:00",
-            "gameStatus": 6,
-        }),
+        Match.model_validate(
+            {
+                "id": 1,
+                "roundId": 1,
+                "teamAId": 1,
+                "teamAName": "Home",
+                "teamALogo": None,
+                "teamBId": 2,
+                "teamBName": "Away",
+                "teamBLogo": None,
+                "gameStart": "2024-10-01T19:00:00",
+                "gameStatus": 6,
+            }
+        ),
     ]
     return LeagueMetaResponse(
         season_id=10,
@@ -150,7 +167,6 @@ def test_openapi_schema_tournaments_documentation(client: TestClient) -> None:
     # OpenAPI tags check
     tags = {t["name"] for t in schema.get("tags", [])}
     assert {"Tournaments", "Public", "Auth", "Private (Authenticated)", "Health"}.issubset(tags)
-
 
 
 # ---------------------------------------------------------------------------
@@ -364,14 +380,30 @@ def test_fixtures_match_is_finished_field(client: TestClient) -> None:
 
 def test_players_search_filter(client: TestClient) -> None:
     """Search query parameter filters players by name substring."""
-    p1 = Player.model_validate({
-        "playerId": 1, "playerName": "Eran Zahavi", "teamId": 1, "teamName": "Maccabi",
-        "positionId": 4, "price": 10.0, "totalPoints": 50, "isActive": True,
-    })
-    p2 = Player.model_validate({
-        "playerId": 2, "playerName": "Dia Saba", "teamId": 2, "teamName": "Maccabi Haifa",
-        "positionId": 3, "price": 8.5, "totalPoints": 40, "isActive": True,
-    })
+    p1 = Player.model_validate(
+        {
+            "playerId": 1,
+            "playerName": "Eran Zahavi",
+            "teamId": 1,
+            "teamName": "Maccabi",
+            "positionId": 4,
+            "price": 10.0,
+            "totalPoints": 50,
+            "isActive": True,
+        }
+    )
+    p2 = Player.model_validate(
+        {
+            "playerId": 2,
+            "playerName": "Dia Saba",
+            "teamId": 2,
+            "teamName": "Maccabi Haifa",
+            "positionId": 3,
+            "price": 8.5,
+            "totalPoints": 40,
+            "isActive": True,
+        }
+    )
     with patch(
         "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_all_players",
         new=AsyncMock(return_value=[p1, p2]),
@@ -386,10 +418,18 @@ def test_players_search_filter(client: TestClient) -> None:
 def test_players_sorting_and_pagination(client: TestClient) -> None:
     """Players can be sorted by price / points and paginated with limit / offset."""
     players = [
-        Player.model_validate({
-            "playerId": i, "playerName": f"Player {i}", "teamId": 1, "teamName": "Team",
-            "positionId": 3, "price": float(i), "totalPoints": i * 10, "isActive": True,
-        })
+        Player.model_validate(
+            {
+                "playerId": i,
+                "playerName": f"Player {i}",
+                "teamId": 1,
+                "teamName": "Team",
+                "positionId": 3,
+                "price": float(i),
+                "totalPoints": i * 10,
+                "isActive": True,
+            }
+        )
         for i in range(1, 6)
     ]
     with patch(
@@ -405,9 +445,7 @@ def test_players_sorting_and_pagination(client: TestClient) -> None:
         assert data[1]["id"] == 4
 
         # Offset 2, limit 2
-        resp_offset = client.get(
-            "/api/v1/israel/players?sort_by=price&order=desc&offset=2&limit=2"
-        )
+        resp_offset = client.get("/api/v1/israel/players?sort_by=price&order=desc&offset=2&limit=2")
         assert resp_offset.status_code == 200
         data_offset = resp_offset.json()
         assert len(data_offset) == 2

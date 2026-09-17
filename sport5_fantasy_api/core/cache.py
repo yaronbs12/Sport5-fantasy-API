@@ -148,11 +148,7 @@ class TTLCache:
         """
         now = time.monotonic()
         async with self.lock:
-            return sum(
-                1
-                for _, expiry in self._store.values()
-                if now < expiry
-            )
+            return sum(1 for _, expiry in self._store.values() if now < expiry)
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"TTLCache(entries={len(self._store)})"

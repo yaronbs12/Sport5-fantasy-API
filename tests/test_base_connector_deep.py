@@ -137,9 +137,7 @@ async def test_safe_post_success_and_waf_detection(
     mock_client.post.return_value = mock_resp
 
     with patch.object(connector, "_get_client", return_value=mock_client):
-        res = await connector._safe_post(
-            "/api/test", auth_cookie="test-token", json_data={"a": 1}
-        )
+        res = await connector._safe_post("/api/test", auth_cookie="test-token", json_data={"a": 1})
         assert res == {"success": True}
 
     # POST returning HTML (WAF block)
@@ -180,11 +178,7 @@ async def test_discover_season_id_cache_hit_and_fallback(
 
     # Clear cache and test fallback to first active league when target urlName not matched
     await connector.cache.clear()
-    payload = {
-        "data": [
-            {"urlName": "other_league", "currentSeasonId": 42, "isActive": True}
-        ]
-    }
+    payload = {"data": [{"urlName": "other_league", "currentSeasonId": 42, "isActive": True}]}
     with patch.object(connector, "_safe_get", return_value=payload):
         discovered = await connector.discover_season_id()
         assert discovered == 42
@@ -211,9 +205,7 @@ async def test_get_teams_and_mapping(connector: IsraeliLeagueConnector) -> None:
             ]
         }
     }
-    with patch.object(
-        connector, "get_league_details", return_value=league_payload["data"]
-    ):
+    with patch.object(connector, "get_league_details", return_value=league_payload["data"]):
         teams = await connector.get_teams()
         assert len(teams) == 2
         assert teams[0].id == 1
@@ -298,12 +290,8 @@ async def test_get_all_players_fallback_to_league_details(
 
     with (
         patch.object(connector, "discover_season_id", return_value=10),
-        patch.object(
-            connector, "_safe_get", side_effect=Exception("Endpoint failed")
-        ),
-        patch.object(
-            connector, "get_league_details", return_value=league_details
-        ),
+        patch.object(connector, "_safe_get", side_effect=Exception("Endpoint failed")),
+        patch.object(connector, "get_league_details", return_value=league_details),
     ):
         players = await connector.get_all_players()
         assert len(players) == 1
@@ -367,9 +355,7 @@ async def test_get_fixtures_parsing_and_sorting(
 
     with (
         patch.object(connector, "discover_season_id", return_value=10),
-        patch.object(
-            connector, "get_league_details", return_value=league_payload
-        ),
+        patch.object(connector, "get_league_details", return_value=league_payload),
     ):
         fixtures = await connector.get_fixtures()
         assert fixtures.season_name == "2024-2025"

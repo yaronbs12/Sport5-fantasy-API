@@ -235,19 +235,36 @@ def test_players_endpoint_excludes_inactive_by_default() -> None:
     app = create_app()
 
     mock_players = [
-        Player.model_validate({
-            "playerId": 1, "playerName": "Active", "teamId": 1,
-            "teamName": "T", "positionId": 2, "price": 5.0, "isActive": True,
-        }),
-        Player.model_validate({
-            "playerId": 2, "playerName": "Inactive", "teamId": 1,
-            "teamName": "T", "positionId": 2, "price": 4.0, "isActive": False,
-        }),
+        Player.model_validate(
+            {
+                "playerId": 1,
+                "playerName": "Active",
+                "teamId": 1,
+                "teamName": "T",
+                "positionId": 2,
+                "price": 5.0,
+                "isActive": True,
+            }
+        ),
+        Player.model_validate(
+            {
+                "playerId": 2,
+                "playerName": "Inactive",
+                "teamId": 1,
+                "teamName": "T",
+                "positionId": 2,
+                "price": 4.0,
+                "isActive": False,
+            }
+        ),
     ]
 
-    with TestClient(app) as client, patch(
-        "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_all_players",
-        new=AsyncMock(return_value=mock_players),
+    with (
+        TestClient(app) as client,
+        patch(
+            "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_all_players",
+            new=AsyncMock(return_value=mock_players),
+        ),
     ):
         resp_default = client.get("/api/v1/israel/players")
         resp_include = client.get("/api/v1/israel/players?include_inactive=true")

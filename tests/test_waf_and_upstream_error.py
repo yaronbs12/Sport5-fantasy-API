@@ -49,7 +49,6 @@ def mock_asyncio_sleep() -> Generator[AsyncMock, None, None]:
         yield m
 
 
-
 # ---------------------------------------------------------------------------
 # E1. _safe_get: HTML body detection raises correct exceptions
 # ---------------------------------------------------------------------------
@@ -233,9 +232,12 @@ def test_public_players_timeout_returns_non_200(client: TestClient) -> None:
     # Use raise_server_exceptions=False so TestClient returns the error response
     # instead of propagating the Python exception.
     app = create_app()
-    with TestClient(app, raise_server_exceptions=False) as safe_client, patch(
-        "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_all_players",
-        new=raise_timeout,
+    with (
+        TestClient(app, raise_server_exceptions=False) as safe_client,
+        patch(
+            "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_all_players",
+            new=raise_timeout,
+        ),
     ):
         resp = safe_client.get("/api/v1/israel/players")
 
@@ -266,9 +268,7 @@ def test_login_missing_cookie_returns_401(client: TestClient) -> None:
     """Login succeeds HTTP-wise but cookie absent -> connector raises Sport5AuthError -> 401."""
     with patch(
         "sport5_fantasy_api.connectors.base.BaseSport5Connector.login",
-        new=AsyncMock(
-            side_effect=Sport5AuthError("Missing session cookie after successful login")
-        ),
+        new=AsyncMock(side_effect=Sport5AuthError("Missing session cookie after successful login")),
     ):
         resp = client.post(
             "/api/v1/israel/auth/login",

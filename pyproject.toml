@@ -16,11 +16,6 @@ license = { text = "MIT" }
 authors = [
     { name = "Yaron Ben Shimol", email = "yaronbs12@gmail.com" },
 ]
-
-[project.urls]
-Homepage = "https://github.com/yaronbs12/Sport5-fantasy-API"
-Repository = "https://github.com/yaronbs12/Sport5-fantasy-API"
-Issues = "https://github.com/yaronbs12/Sport5-fantasy-API/issues"
 keywords = [
     "fantasy",
     "sport5",
@@ -58,6 +53,11 @@ dependencies = [
     "pydantic>=2.6.0",
     "pydantic-settings>=2.2.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/yaronbs12/Sport5-fantasy-API"
+Repository = "https://github.com/yaronbs12/Sport5-fantasy-API"
+Issues = "https://github.com/yaronbs12/Sport5-fantasy-API/issues"
 
 # ---------------------------------------------------------------------------
 # Optional / dev dependency groups

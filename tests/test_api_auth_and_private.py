@@ -36,30 +36,28 @@ def _make_roster_player(
     is_bench: bool = False,
     role: PlayerRole = PlayerRole.PLAYER,
 ) -> RosterPlayer:
-    return RosterPlayer.model_validate({
-        "playerId": pid,
-        "playerName": f"Player {pid}",
-        "teamId": 1,
-        "teamName": "Team",
-        "positionId": 3,
-        "price": 7.0,
-        "isActive": True,
-        "isReserve": is_bench,
-        "isCaptain": role == PlayerRole.CAPTAIN,
-        "isSubCaptain": role == PlayerRole.SUB_CAPTAIN,
-    })
+    return RosterPlayer.model_validate(
+        {
+            "playerId": pid,
+            "playerName": f"Player {pid}",
+            "teamId": 1,
+            "teamName": "Team",
+            "positionId": 3,
+            "price": 7.0,
+            "isActive": True,
+            "isReserve": is_bench,
+            "isCaptain": role == PlayerRole.CAPTAIN,
+            "isSubCaptain": role == PlayerRole.SUB_CAPTAIN,
+        }
+    )
 
 
 def _make_full_squad() -> UserTeamResponse:
     """Build a valid 11+4 squad with captain and sub_captain."""
-    starters = [
-        _make_roster_player(i, is_bench=False) for i in range(1, 11)
-    ]
+    starters = [_make_roster_player(i, is_bench=False) for i in range(1, 11)]
     captain = _make_roster_player(100, is_bench=False, role=PlayerRole.CAPTAIN)
     sub_cap = _make_roster_player(200, is_bench=True, role=PlayerRole.SUB_CAPTAIN)
-    bench = [
-        _make_roster_player(300 + i, is_bench=True) for i in range(3)
-    ] + [sub_cap]
+    bench = [_make_roster_player(300 + i, is_bench=True) for i in range(3)] + [sub_cap]
 
     return UserTeamResponse(
         user_id="u1",
@@ -203,9 +201,12 @@ def test_me_team_bearer_token_forwarded_to_connector() -> None:
         captured_tokens.append(auth_cookie)
         return _make_full_squad()
 
-    with TestClient(app) as client, patch(
-        "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_user_team",
-        new=fake_get_user_team,
+    with (
+        TestClient(app) as client,
+        patch(
+            "sport5_fantasy_api.connectors.base.BaseSport5Connector.get_user_team",
+            new=fake_get_user_team,
+        ),
     ):
         client.get(
             "/api/v1/israel/me/team",
@@ -304,14 +305,24 @@ def test_me_league_leaderboard_endpoint(client: TestClient) -> None:
         totalMembers=2,
         pageIndex=0,
         members=[
-            LeagueMember.model_validate({
-                "userId": "10", "userName": "Alice", "teamName": "Team Alice",
-                "totalPoints": 120, "rank": 1,
-            }),
-            LeagueMember.model_validate({
-                "userId": "20", "userName": "Bob", "teamName": "Team Bob",
-                "totalPoints": 110, "rank": 2,
-            }),
+            LeagueMember.model_validate(
+                {
+                    "userId": "10",
+                    "userName": "Alice",
+                    "teamName": "Team Alice",
+                    "totalPoints": 120,
+                    "rank": 1,
+                }
+            ),
+            LeagueMember.model_validate(
+                {
+                    "userId": "20",
+                    "userName": "Bob",
+                    "teamName": "Team Bob",
+                    "totalPoints": 110,
+                    "rank": 2,
+                }
+            ),
         ],
     )
 
