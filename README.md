@@ -1,11 +1,12 @@
 # Sport5 Fantasy API & SDK 🏆
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![CI](https://github.com/yaronbs12/sport5-fantasy/actions/workflows/ci.yml/badge.svg)](https://github.com/yaronbs12/sport5-fantasy/actions/workflows/ci.yml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688.svg)](https://fastapi.tiangolo.com)
 [![Pydantic V2](https://img.shields.io/badge/Pydantic-V2-e92063.svg)](https://docs.pydantic.dev/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Tests](https://img.shields.io/badge/tests-158%20passed-brightgreen.svg)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-92%25-brightgreen.svg)](htmlcov/index.html)
+[![Coverage](https://img.shields.io/badge/coverage-92%25-brightgreen.svg)](tests/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 An open-source, production-grade **asynchronous REST API and Python SDK client** for the
@@ -96,7 +97,7 @@ pip install .
 ### Option 2: Editable Installation (Development)
 
 ```bash
-git clone https://github.com/your-org/sport5-fantasy.git
+git clone https://github.com/yaronbs12/sport5-fantasy.git
 cd sport5-fantasy
 
 # Create and activate virtual environment

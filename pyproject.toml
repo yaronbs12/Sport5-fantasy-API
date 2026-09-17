@@ -14,8 +14,13 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [
-    { name = "sport5-fantasy contributors" },
+    { name = "Yaron Ben Shimol", email = "yaronbs12@gmail.com" },
 ]
+
+[project.urls]
+Homepage = "https://github.com/yaronbs12/sport5-fantasy"
+Repository = "https://github.com/yaronbs12/sport5-fantasy"
+Issues = "https://github.com/yaronbs12/sport5-fantasy/issues"
 keywords = [
     "fantasy",
     "sport5",
