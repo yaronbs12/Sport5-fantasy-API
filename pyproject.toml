@@ -18,9 +18,9 @@ authors = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yaronbs12/sport5-fantasy"
-Repository = "https://github.com/yaronbs12/sport5-fantasy"
-Issues = "https://github.com/yaronbs12/sport5-fantasy/issues"
+Homepage = "https://github.com/yaronbs12/Sport5-fantasy-API"
+Repository = "https://github.com/yaronbs12/Sport5-fantasy-API"
+Issues = "https://github.com/yaronbs12/Sport5-fantasy-API/issues"
 keywords = [
     "fantasy",
     "sport5",

@@ -1,6 +1,6 @@
 # Sport5 Fantasy API & SDK 🏆
 
-[![CI](https://github.com/yaronbs12/sport5-fantasy/actions/workflows/ci.yml/badge.svg)](https://github.com/yaronbs12/sport5-fantasy/actions/workflows/ci.yml)
+[![CI](https://github.com/yaronbs12/Sport5-fantasy-API/actions/workflows/ci.yml/badge.svg)](https://github.com/yaronbs12/Sport5-fantasy-API/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688.svg)](https://fastapi.tiangolo.com)
 [![Pydantic V2](https://img.shields.io/badge/Pydantic-V2-e92063.svg)](https://docs.pydantic.dev/)
@@ -35,7 +35,7 @@ UEFA Champions League, Euroleague Basketball, FIFA World Cup, and UEFA Euro tour
 ## 🏗️ Architecture & Directory Layout
 
 ```text
-sport5-fantasy/
+Sport5-fantasy-API/
 ├── pyproject.toml                 # Packaging, dependencies, scripts, and tool configs
 ├── LICENSE                        # MIT open-source license
 ├── README.md                      # Documentation
@@ -97,8 +97,8 @@ pip install .
 ### Option 2: Editable Installation (Development)
 
 ```bash
-git clone https://github.com/yaronbs12/sport5-fantasy.git
-cd sport5-fantasy
+git clone https://github.com/yaronbs12/Sport5-fantasy-API.git
+cd Sport5-fantasy-API
 
 # Create and activate virtual environment
 python -m venv .venv
@@ -113,10 +113,10 @@ pip install -e ".[dev]"
 
 ```bash
 # Build production Docker image
-docker build -t sport5-fantasy:latest .
+docker build -t sport5-fantasy-api:latest .
 
 # Run container with environment configuration
-docker run -d --name sport5-api -p 8000:8000 --env-file .env.example sport5-fantasy:latest
+docker run -d --name sport5-api -p 8000:8000 --env-file .env.example sport5-fantasy-api:latest
 ```
 
 ---
