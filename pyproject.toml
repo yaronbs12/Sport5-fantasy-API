@@ -12,7 +12,7 @@ version = "0.1.0"
 description = "Unofficial asynchronous Python client and REST API for Sport5 Fantasy competitions (Israeli Premier League, Champions League, Euroleague, World Cup, Euro)."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = "MIT"
 authors = [
     { name = "Yaron Ben Shimol", email = "yaronbs12@gmail.com" },
 ]
@@ -31,7 +31,6 @@ keywords = [
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
