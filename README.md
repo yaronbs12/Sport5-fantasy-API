@@ -277,9 +277,7 @@ async def main() -> None:
 
         # 3. Filter active forwards priced <= 9.0M
         budget_fwds = [
-            p
-            for p in players
-            if p.is_active and p.position == Position.FWD and p.price <= 9.0
+            p for p in players if p.is_active and p.position == Position.FWD and p.price <= 9.0
         ]
         for p in budget_fwds[:5]:
             print(f"[{p.team_name}] {p.name} - {p.price}M (Points: {p.total_points})")
